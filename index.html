@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어 타임머신 시뮬레이터 (Time Machine Console)</title>
+    <style>
+        :root {
+            --bg-color: #0f0f12;
+            --panel-color: #1a1a24;
+            --neon-blue: #00f0ff;
+            --neon-green: #39ff14;
+            --neon-purple: #bd00ff;
+            --neon-yellow: #ffea00;
+            --text-color: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .console-container {
+            background-color: var(--panel-color);
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 650px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px var(--neon-blue);
+            margin-top: 0;
+            font-size: 24px;
+            letter-spacing: 2px;
+        }
+
+        .mode-switch {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .mode-btn {
+            background: transparent;
+            border: 2px solid #555;
+            color: #aaa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            border-color: var(--neon-purple);
+            color: white;
+            box-shadow: 0 0 10px var(--neon-purple);
+            background: rgba(189, 0, 255, 0.1);
+        }
+
+        /* 디스플레이 창 */
+        .display-window {
+            background-color: #0a0a0f;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 30px 20px;
+            margin-bottom: 25px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-emoji {
+            font-size: 45px;
+            margin-bottom: 15px;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .sentence-output {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            line-height: 1.5;
+        }
+
+        .highlight-pronoun { color: #ff5555; text-shadow: 0 0 5px rgba(255,85,85,0.5); }
+        .highlight-verb { padding: 2px 8px; border-radius: 4px; font-size: 26px; }
+        .v-am { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); }
+        .v-is { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+        .v-are { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); }
+
+        .korean-translation {
+            color: #888;
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        /* 컨트롤 패널 */
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-label {
+            text-align: left;
+            font-size: 13px;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .pronoun-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .selector-btn {
+            background-color: #222230;
+            border: 1px solid #444;
+            color: white;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .selector-btn:hover {
+            background-color: #2d2d42;
+        }
+
+        .selector-btn.active {
+            background-color: rgba(0, 240, 255, 0.15);
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+        }
+
+        .time-lever-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .time-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #444;
+            background-color: #222230;
+            color: #aaa;
+            transition: all 0.3s;
+        }
+
+        .time-btn.active-now {
+            border-color: var(--neon-green);
+            color: white;
+            background: rgba(57, 255, 20, 0.1);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+        }
+
+        .time-btn.active-then {
+            border-color: #ff3366;
+            color: white;
+            background: rgba(255, 51, 102, 0.1);
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.3);
+        }
+
+        /* 퀴즈 UI */
+        .quiz-container {
+            display: none;
+            width: 100%;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            background: #222230;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .score-val { color: var(--neon-green); }
+        .rank-val { color: var(--neon-yellow); }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            background: #252535;
+            border: 2px solid #444;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--neon-blue);
+            background: #2d2d42;
+        }
+
+        .feedback-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            border-radius: 12px;
+        }
+
+        .feedback-correct { background: rgba(57, 255, 20, 0.2); color: var(--neon-green); }
+        .feedback-wrong { background: rgba(255, 51, 102, 0.2); color: #ff3366; }
+
+        .show-feedback { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="console-container">
+        <h1>🤖 TIME MACHINE CONSOLE</h1>
+        
+        <div class="mode-switch">
+            <button class="mode-btn active" id="btn-mode-practice" onclick="setMode('practice')">⏱️ 자유 연습 모드</button>
+            <button class="mode-btn" id="btn-mode-quiz" onclick="setMode('quiz')">⚔️ 타임머신 복구 퀴즈</button>
+        </div>
+
+        <!-- 메인 디스플레이 -->
+        <div class="display-window" id="display-window">
+            <div class="status-emoji" id="display-emoji">👑</div>
+            <div class="sentence-output" id="display-sentence">
+                <!-- 자바스크립트로 주입됨 -->
+            </div>
+            <div class="korean-translation" id="display-translation">
+                <!-- 자바스크립트로 주입됨 -->
+            </div>
+            
+            <!-- 퀴즈 피드백 이펙트창 -->
+            <div class="feedback-overlay id="feedback-layer">⭕ CORRECT!</div>
+        </div>
+
+        <!-- 모드 1: 자유 연습 컨트롤러 -->
+        <div class="control-section" id="practice-controls">
+            <div>
+                <div class="panel-label">1. 주어(Pronoun) 선택 장치</div>
+                <div class="pronoun-grid">
+                    <button class="selector-btn active" onclick="selectPronoun('I', this)">I (나)</button>
+                    <button class="selector-btn" onclick="selectPronoun('You', this)">You (너)</button>
+                    <button class="selector-btn" onclick="selectPronoun('He', this)">He (그)</button>
+                    <button class="selector-btn" onclick="selectPronoun('She', this)">She (그녀)</button>
+                    <button class="selector-btn" onclick="selectPronoun('It', this)">It (그것)</button>
+                    <button class="selector-btn" onclick="selectPronoun('We', this)">We (우리)</button>
+                    <button class="selector-btn" onclick="selectPronoun('They', this)">They (그들)</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel-label">2. 시간선 전환 레버 (Time Lever)</div>
+                <div class="time-lever-container">
+                    <button class="time-btn active-now" id="time-now" onclick="setTime('now')">⚡ NOW (현재 라이브)</button>
+                    <button class="time-btn" id="time-then" onclick="setTime('then')">⏳ THEN (과거 사진첩)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 모드 2: 퀴즈 컨트롤러 -->
+        <div class="quiz-container" id="quiz-controls">
+            <div class="score-board">
+                <div>에너지 복구도: <span class="score-val" id="score-text">0%</span></div>
+                <div>타임로드 등급: <span class="rank-val" id="rank-text">훈련생</span></div>
+            </div>
+            <div class="panel-label">정답인 be동사 엔진을 고르세요!</div>
+            <div class="quiz-options" id="quiz-options-box">
+                <!-- 옵션 버튼들이 동적으로 생성됨 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 게임 데이터 데이터베이스
+        const gameData = {
+            I: {
+                now: { verb: 'am', text: '<span class="highlight-pronoun">I</span> <span class="highlight-verb v-am">am</span> a Minecraft pro now.', ko: '나 지금 마인크래프트 초고수야! (현재 라이브)', emoji: '👑' },
+                then: { verb: 'was', text: '<span class="highlight-pronoun">I</span> <span class="highlight-verb v-am">was</span> a beginner last year.', ko: '나 작년엔 그냥 생초보였어. (옛날 사진첩)', emoji: '🌱' }
+            },
+            You: {
+                now: { verb: 'are', text: '<span class="highlight-pronoun">You</span> <span class="highlight-verb v-are">are</span> hungry now.', ko: '너 지금 배고프구나? (꼬르륵 실시간 방송 중)', emoji: '🍕' },
+                then: { verb: 'were', text: '<span class="highlight-pronoun">You</span> <span class="highlight-verb v-are">were</span> full 10 minutes ago.', ko: '너 10분 전엔 배 터질 것 같다고 했잖아! (과거 스냅샷)', emoji: '🎂' }
+            },
+            He: {
+                now: { verb: 'is', text: '<span class="highlight-pronoun">He</span> <span class="highlight-verb v-is">is</span> in the Roblox world.', ko: '그는 지금 로블록스 세계에 접속해 있어! (온라인 상태)', emoji: '🎮' },
+                then: { verb: 'was', text: '<span class="highlight-pronoun">He</span> <span class="highlight-verb v-is">was</span> in his bed an hour ago.', ko: '그는 한 시간 전엔 침대에서 자고 있었어. (꿈나라 시절)', emoji: '🛏️' }
+            },
+            She: {
+                now: { verb: 'is', text: '<span class="highlight-pronoun">She</span> <span class="highlight-verb v-is">is</span> happy today.', ko: '그녀는 오늘 기분이 아주 좋아. (싱글벙글 실시간)', emoji: '😊' },
+                then: { verb: 'was', text: '<span class="highlight-pronoun">She</span> <span class="highlight-verb v-is">was</span> angry yesterday.', ko: '그녀는 어제 엄청 화났었지... (어제 다이어리 속 이야기)', emoji: '😡' }
+            },
+            It: {
+                now: { verb: 'is', text: '<span class="highlight-pronoun">It</span> <span class="highlight-verb v-is">is</span> a cool robot.', ko: '와, 이거 진짜 멋진 로봇이다! (조립 완성 완료)', emoji: '🤖' },
+                then: { verb: 'was', text: '<span class="highlight-pronoun">It</span> <span class="highlight-verb v-is">was</span> just a box of Lego.', ko: '이거 아까는 그냥 레고 박스였어. (조립 전 상태)', emoji: '📦' }
+            },
+            We: {
+                now: { verb: 'are', text: '<span class="highlight-pronoun">We</span> <span class="highlight-verb v-are">are</span> team champions!', ko: '우리는 지금 최강 챔피언 팀이야! (우승 트로피 번쩍)', emoji: '🏆' },
+                then: { verb: 'were', text: '<span class="highlight-pronoun">We</span> <span class="highlight-verb v-are">were</span> defeated yesterday.', ko: '우리 어제는 처참하게 패배했었어... (눈물의 옛날 경기)', emoji: '😭' }
+            },
+            They: {
+                now: { verb: 'are', text: '<span class="highlight-pronoun">They</span> <span class="highlight-verb v-are">are</span> my best game friends.', ko: '얘네들은 내 최고의 게임 친구들이야. (멀티플레이 중)', emoji: '👾' },
+                then: { verb: 'were', text: '<span class="highlight-pronoun">They</span> <span class="highlight-verb v-are">were</span> enemies in the last game.', ko: '얘네들 바로 전 판에서는 내 적팀이었어! (무시무시했던 과거)', emoji: '⚔️' }
+            }
+        };
+
+        // 퀴즈 문제집 생성기
+        const quizDatabase = [
+            { q: "Yesterday, I ___ a bit sick.", a: "was", ko: "어제 나 살짝 아팠었어.", emoji: "🤒" },
+            { q: "Look! They ___ playing Roblox right now.", a: "are", ko: "봐봐! 쟤네 지금 로블록스 하고 있어.", emoji: "🎮" },
+            { q: "Two hours ago, it ___ rainy.", a: "was", ko: "두 시간 전에는 비가 왔었어.", emoji: "🌧️" },
+            { q: "We ___ happy to win the game today!", a: "are", ko: "우리 오늘 게임 이겨서 지금 완전 신나!", emoji: "🎉" },
+            { q: "She ___ short 3 years ago, but now she is tall.", a: "was", ko: "그녀는 3년 전에 키가 작았었어.", emoji: "👧" },
+            { q: "You ___ the MVP of this live match!", a: "are", ko: "네가 이번 실시간 경기 최고의 MVP야!", emoji: "🥇" },
+            { q: "Where is dad? He ___ in the kitchen now.", a: "is", ko: "아빠 어디 계셔? 지금 부엌에 있으셔.", emoji: "🍳" },
+            { q: "Last night, we ___ very tired.", a: "were", ko: "어젯밤에 우리 진짜 피곤했었잖아.", emoji: "😴" },
+            { q: "They ___ bad hackers before, but now they are good.", a: "were", ko: "그들은 예전에 나쁜 해커들이었어.", emoji: "💻" },
+            { q: "Right now, it ___ a very hot day.", a: "is", ko: "지금 날씨가 진짜 엄청 덥네.", emoji: "☀️" }
+        ];
+
+        // 현재 시스템 상태 관리자
+        let currentPronoun = 'I';
+        let currentTime = 'now';
+        let currentMode = 'practice';
+        let score = 0;
+        let currentQuizIndex = 0;
+
+        // 연습 모드 화면 새로고침
+        function updatePracticeDisplay() {
+            const data = gameData[currentPronoun][currentTime];
+            document.getElementById('display-emoji').innerText = data.emoji;
+            document.getElementById('display-sentence').innerHTML = data.text;
+            document.getElementById('display-translation').innerText = data.ko;
+        }
+
+        // 주어 변경 단추 클릭 시
+        function selectPronoun(pronoun, element) {
+            currentPronoun = pronoun;
+            document.querySelectorAll('.pronoun-grid .selector-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            updatePracticeDisplay();
+        }
+
+        // 시간 변경 레버 작동 시
+        function setTime(time) {
+            currentTime = time;
+            const nowBtn = document.getElementById('time-now');
+            const thenBtn = document.getElementById('time-then');
+
+            if(time === 'now') {
+                nowBtn.className = "time-btn active-now";
+                thenBtn.className = "time-btn";
+            } else {
+                nowBtn.className = "time-btn";
+                thenBtn.className = "time-btn active-then";
+            }
+            updatePracticeDisplay();
+        }
+
+        // 게임 모드 변경 제어기
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-mode-practice').classList.remove('active');
+            document.getElementById('btn-mode-quiz').classList.remove('active');
+            
+            if(mode === 'practice') {
+                document.getElementById('btn-mode-practice').classList.add('active');
+                document.getElementById('practice-controls').style.display = 'flex';
+                document.getElementById('quiz-controls').style.display = 'none';
+                updatePracticeDisplay();
+            } else {
+                document.getElementById('btn-mode-quiz').classList.add('active');
+                document.getElementById('practice-controls').style.display = 'none';
+                document.getElementById('quiz-controls').style.display = 'block';
+                score = 0;
+                currentQuizIndex = 0;
+                updateScoreBoard();
+                loadQuizQuestion();
+            }
+        }
+
+        // 퀴즈 문제 불러오기
+        function loadQuizQuestion() {
+            if (currentQuizIndex >= quizDatabase.length) {
+                // 게임 클리어 상태
+                document.getElementById('display-emoji').innerText = "🚀";
+                document.getElementById('display-sentence').innerHTML = "<span style='color:#39ff14'>TIME ENGINE FULLY REPAIRED!</span>";
+                document.getElementById('display-translation').innerText = "축하합니다! 대명사와 be동사 마스터 완료!";
+                document.getElementById('quiz-options-box').innerHTML = `<button class="option-btn" style="grid-column: span 2;" onclick="setMode('quiz')">🔄 처음부터 다시 도전하기</button>`;
+                return;
+            }
+
+            const currentQuiz = quizDatabase[currentQuizIndex];
+            document.getElementById('display-emoji').innerText = currentQuiz.emoji;
+            document.getElementById('display-sentence').innerHTML = currentQuiz.q.replace("___", "<span style='color:#bd00ff; border-bottom:3px dashed #bd00ff; padding: 0 15px;'> ? </span>");
+            document.getElementById('display-translation').innerText = currentQuiz.ko;
+
+            // 보기를 오지선다나 문법 규칙에 맞게 무작위 추출하되, 직관성을 위해 현재/과거 대표 주자 배치
+            const options = ["am", "is", "are", "was", "were"];
+            // 정답을 포함한 4개의 보기 구성
+            let finalOptions = [currentQuiz.a];
+            while(finalOptions.length < 4) {
+                let randomOpt = options[Math.floor(Math.random() * options.length)];
+                if(!finalOptions.includes(randomOpt)) {
+                    finalOptions.push(randomOpt);
+                }
+            }
+            // 보기 셔플
+            finalOptions.sort(() => Math.random() - 0.5);
+
+            // 버튼 생성
+            const optionsBox = document.getElementById('quiz-options-box');
+            optionsBox.innerHTML = '';
+            finalOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, currentQuiz.a);
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        // 퀴즈 정답 검증 시스템
+        function checkAnswer(chosen, correct) {
+            const displayWindow = document.getElementById('display-window');
+            
+            // 기존 피드백 레이어가 있다면 제거
+            let oldLayer = document.getElementById('feedback-layer');
+            if(oldLayer) oldLayer.remove();
+
+            const layer = document.createElement('div');
+            layer.id = 'feedback-layer';
+
+            if(chosen === correct) {
+                layer.className = 'feedback-overlay feedback-correct show-feedback';
+                layer.innerText = "⭕ CORRECT! (+10 XP)";
+                score += 10;
+            } else {
+                layer.className = 'feedback-overlay feedback-wrong show-feedback';
+                layer.innerText = `❌ WRONG! (Answer: ${correct})`;
+            }
+
+            displayWindow.appendChild(layer);
+            updateScoreBoard();
+
+            // 1.5초 후 피드백 제거하고 다음 문제로
+            setTimeout(() => {
+                layer.classList.remove('show-feedback');
+                currentQuizIndex++;
+                loadQuizQuestion();
+            }, 1500);
+        }
+
+        // 스코어 및 등급 판정기 업데이트
+        function updateScoreBoard() {
+            document.getElementById('score-text').innerText = score + "%";
+            
+            let rank = "훈련생";
+            if(score >= 30) rank = "동네 시간 여행자 🧭";
+            if(score >= 60) rank = "차원 도약 전문가 🌀";
+            if(score >= 90) rank = "최고 전설의 타임 로드 👑";
+            
+            document.getElementById('rank-text').innerText = rank;
+        }
+
+        // 초기 구동
+        updatePracticeDisplay();
+    </script>
+</body>
+</html>
