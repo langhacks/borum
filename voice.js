@@ -5,20 +5,31 @@ const VoiceEngine = (() => {
     let voiceGender = 'female';
     try { voiceGender = localStorage.getItem('voiceGender') || 'female'; } catch (e) {}
 
-    // Web Speech API에는 성별 정보가 없어 잘 알려진 목소리 이름으로 추정
+    // Web Speech API에는 성별 정보가 없어 목소리 이름으로 추정한다.
+    // - Windows/macOS: 사람 이름 (David, Samantha, ...)
+    // - Android(Google TTS): 변종 코드 (en-us-x-iol 등) — 커뮤니티에 알려진 성별 매핑 사용
     // 주의: "female"에 "male"이 포함되므로 여성 판정을 먼저 한다
-    const FEMALE_NAMES = /female|samantha|victoria|zira|susan|karen|hazel|jenny|aria|kate|serena|moira|tessa|allison|ava/i;
-    const MALE_NAMES = /male|david|daniel|alex|fred|george|james|guy|mark|tom|aaron|arthur|oliver|ryan/i;
+    const FEMALE_HINT = /female|samantha|victoria|zira|susan|karen|hazel|jenny|aria|kate|serena|moira|tessa|allison|ava|x-sfg|x-iob|x-iog|x-tpc|x-tpf/i;
+    const MALE_HINT = /male|david|daniel|alex|fred|george|james|guy|mark|tom|aaron|arthur|oliver|ryan|x-iol|x-iom|x-tpd/i;
 
-    // 목소리 목록은 비동기 로딩되므로 미리 한 번 요청해 둔다
-    if ('speechSynthesis' in window) speechSynthesis.getVoices();
+    // 목소리 목록은 비동기 로딩되므로 미리 한 번 요청해 둔다 (voiceschanged 이후 완전해짐)
+    if ('speechSynthesis' in window) {
+        speechSynthesis.getVoices();
+        speechSynthesis.addEventListener('voiceschanged', () => speechSynthesis.getVoices());
+    }
 
     function pickVoice() {
-        const voices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith('en'));
+        // Android는 lang을 en_US처럼 밑줄로 주기도 한다
+        const voices = speechSynthesis.getVoices()
+            .filter(v => v.lang && v.lang.replace('_', '-').toLowerCase().startsWith('en'));
         if (!voices.length) return null;
-        const isFemale = v => FEMALE_NAMES.test(v.name);
-        const isMale = v => !isFemale(v) && MALE_NAMES.test(v.name);
-        return voices.find(voiceGender === 'male' ? isMale : isFemale) || voices[0];
+        // Android에서는 name이 비어 있거나 중복되고 voiceURI에만 변종 코드가 있는 경우가 있다
+        const id = v => (v.name || '') + ' ' + (v.voiceURI || '');
+        const isFemale = v => FEMALE_HINT.test(id(v));
+        const isMale = v => !isFemale(v) && MALE_HINT.test(id(v));
+        const want = voiceGender === 'male' ? isMale : isFemale;
+        const usVoices = voices.filter(v => /en[-_]us/i.test(v.lang));
+        return usVoices.find(want) || voices.find(want) || usVoices[0] || voices[0];
     }
 
     function stop() {
@@ -40,7 +51,8 @@ const VoiceEngine = (() => {
         u.lang = 'en-US';
         u.rate = 0.9;
         const voice = pickVoice();
-        if (voice) u.voice = voice;
+        // Android Chrome은 utterance.lang이 voice.lang과 다르면 지정한 voice를 무시하기도 한다
+        if (voice) { u.voice = voice; u.lang = voice.lang; }
         u.onend = u.onerror = () => {
             if (gen === myGen && onEnd) onEnd();
         };
