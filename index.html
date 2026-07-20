@@ -363,16 +363,17 @@
 
         .feedback-overlay {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0; left: 0; right: 0;
+            height: 100px; /* 이모티콘 영역만 덮고 문장은 가리지 않음 */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            font-size: 20px;
             font-weight: bold;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s;
-            border-radius: 12px;
+            border-radius: 12px 12px 0 0;
         }
 
         .feedback-correct { background: rgba(57, 255, 20, 0.2); color: var(--neon-green); }
