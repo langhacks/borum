@@ -23,6 +23,14 @@ const VoiceEngine = (() => {
         const voices = speechSynthesis.getVoices()
             .filter(v => v.lang && v.lang.replace('_', '-').toLowerCase().startsWith('en'));
         if (!voices.length) return null;
+        // 사용자가 목소리 설정 페이지(voices.html)에서 직접 지정한 목소리가 최우선
+        try {
+            const savedUri = localStorage.getItem('voiceURI:' + voiceGender);
+            if (savedUri) {
+                const saved = voices.find(v => v.voiceURI === savedUri);
+                if (saved) return saved;
+            }
+        } catch (e) {}
         // Android에서는 name이 비어 있거나 중복되고 voiceURI에만 변종 코드가 있는 경우가 있다
         const id = v => (v.name || '') + ' ' + (v.voiceURI || '');
         const isFemale = v => FEMALE_HINT.test(id(v));

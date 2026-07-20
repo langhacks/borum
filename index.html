@@ -257,6 +257,8 @@
             color: var(--neon-blue);
         }
 
+        a.audio-btn { text-decoration: none; display: inline-block; }
+
         .record-panel, .loop-panel {
             display: none;
             margin-top: 15px;
@@ -417,6 +419,7 @@
                 <button class="audio-btn" onclick="playCurrentSentence()">🔊 문장 듣기</button>
                 <button class="audio-btn" onclick="startRecording()">🎤 발음 연습</button>
                 <button class="audio-btn" id="btn-voice-gender" onclick="toggleVoiceGender()"></button>
+                <a class="audio-btn" href="voices.html">🎙️ 목소리 설정</a>
             </div>
             <div class="record-panel" id="record-panel">
                 <div class="rec-indicator"><span class="rec-dot"></span> 녹음 중... (최대 15초)</div>
