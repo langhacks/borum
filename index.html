@@ -416,6 +416,7 @@
             <div class="audio-bar">
                 <button class="audio-btn" onclick="playCurrentSentence()">🔊 문장 듣기</button>
                 <button class="audio-btn" onclick="startRecording()">🎤 발음 연습</button>
+                <button class="audio-btn" id="btn-voice-gender" onclick="toggleVoiceGender()"></button>
             </div>
             <div class="record-panel" id="record-panel">
                 <div class="rec-indicator"><span class="rec-dot"></span> 녹음 중... (최대 15초)</div>
@@ -800,8 +801,19 @@
             document.getElementById('loop-panel').style.display = 'none';
         }
 
+        function updateVoiceGenderBtn() {
+            document.getElementById('btn-voice-gender').innerText =
+                VoiceEngine.getGender() === 'male' ? '👨 남자 목소리' : '👩 여자 목소리';
+        }
+
+        function toggleVoiceGender() {
+            VoiceEngine.setGender(VoiceEngine.getGender() === 'male' ? 'female' : 'male');
+            updateVoiceGenderBtn();
+        }
+
         // 초기 구동
         updatePracticeDisplay();
+        updateVoiceGenderBtn();
     </script>
 </body>
 </html>

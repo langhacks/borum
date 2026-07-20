@@ -76,6 +76,25 @@
             background: rgba(189, 0, 255, 0.1);
         }
 
+        .voice-toggle { text-align: center; margin-bottom: 20px; }
+
+        .voice-btn {
+            background-color: #222230;
+            border: 1px solid #444;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-btn:hover {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
         .section-label {
             font-size: 13px;
             color: #777;
@@ -171,6 +190,10 @@
         <div class="nav-bar">
             <a class="nav-link" href="index.html">🤖 타임머신 콘솔 (연습 &amp; 퀴즈)</a>
             <a class="nav-link active" href="summary.html">📒 요약 노트</a>
+        </div>
+
+        <div class="voice-toggle">
+            <button class="voice-btn" id="btn-voice-gender" onclick="toggleVoiceGender()"></button>
         </div>
 
         <p style="color:#aaa; font-size:14px; line-height:1.6;">
@@ -348,6 +371,18 @@
                 VoiceEngine.play(key, el.innerText);
             });
         });
+
+        function updateVoiceGenderBtn() {
+            document.getElementById('btn-voice-gender').innerText =
+                VoiceEngine.getGender() === 'male' ? '👨 남자 목소리' : '👩 여자 목소리';
+        }
+
+        function toggleVoiceGender() {
+            VoiceEngine.setGender(VoiceEngine.getGender() === 'male' ? 'female' : 'male');
+            updateVoiceGenderBtn();
+        }
+
+        updateVoiceGenderBtn();
     </script>
 
 </body>
