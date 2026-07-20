@@ -229,6 +229,95 @@
             box-shadow: 0 0 10px rgba(255, 51, 102, 0.3);
         }
 
+        /* 음성/녹음 UI */
+        .sentence-output { cursor: pointer; }
+
+        .audio-section { margin-bottom: 25px; }
+
+        .audio-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .audio-btn {
+            background-color: #222230;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px 18px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .audio-btn:hover {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .record-panel, .loop-panel {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #0a0a0f;
+            border: 2px solid #333;
+            border-radius: 12px;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rec-indicator {
+            color: #ff3366;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rec-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff3366;
+            box-shadow: 0 0 8px #ff3366;
+            animation: rec-pulse 1s infinite;
+        }
+
+        @keyframes rec-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        .rec-bar-track {
+            width: 100%;
+            height: 10px;
+            background: #222230;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .rec-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: #ff3366;
+            box-shadow: 0 0 8px #ff3366;
+        }
+
+        .loop-status { color: var(--neon-blue); font-weight: bold; }
+
+        .loop-actions { display: flex; gap: 10px; }
+
+        .audio-msg {
+            color: var(--neon-yellow);
+            font-size: 13px;
+            margin-top: 10px;
+            min-height: 16px;
+            text-align: center;
+        }
+
         /* 퀴즈 UI */
         .quiz-container {
             display: none;
@@ -310,7 +399,7 @@
         <!-- 메인 디스플레이 -->
         <div class="display-window" id="display-window">
             <div class="status-emoji" id="display-emoji">👑</div>
-            <div class="sentence-output" id="display-sentence">
+            <div class="sentence-output" id="display-sentence" title="클릭하면 문장을 읽어줘요" onclick="playCurrentSentence()">
                 <!-- 자바스크립트로 주입됨 -->
             </div>
             <div class="korean-translation" id="display-translation">
@@ -318,7 +407,25 @@
             </div>
             
             <!-- 퀴즈 피드백 이펙트창 -->
-            <div class="feedback-overlay id="feedback-layer">⭕ CORRECT!</div>
+            <div class="feedback-overlay" id="feedback-layer">⭕ CORRECT!</div>
+        </div>
+
+        <!-- 음성 컨트롤 (연습 모드 전용) -->
+        <div class="audio-section" id="audio-section">
+            <div class="audio-bar">
+                <button class="audio-btn" onclick="playCurrentSentence()">🔊 문장 듣기</button>
+                <button class="audio-btn" onclick="startRecording()">🎤 발음 연습</button>
+            </div>
+            <div class="record-panel" id="record-panel">
+                <div class="rec-indicator"><span class="rec-dot"></span> 녹음 중... (최대 15초)</div>
+                <div class="rec-bar-track"><div class="rec-bar-fill" id="rec-bar-fill"></div></div>
+                <button class="audio-btn" onclick="finishRecording()">⏹ 녹음 끝내기</button>
+            </div>
+            <div class="loop-panel" id="loop-panel">
+                <div class="loop-status" id="loop-status"></div>
+                <div class="loop-actions" id="loop-actions"></div>
+            </div>
+            <div class="audio-msg" id="audio-msg"></div>
         </div>
 
         <!-- 모드 1: 자유 연습 컨트롤러 -->
@@ -358,6 +465,7 @@
         </div>
     </div>
 
+    <script src="voice.js"></script>
     <script>
         // 게임 데이터 데이터베이스
         const gameData = {
@@ -422,6 +530,7 @@
 
         // 주어 변경 단추 클릭 시
         function selectPronoun(pronoun, element) {
+            stopVoicePractice();
             currentPronoun = pronoun;
             document.querySelectorAll('.pronoun-grid .selector-btn').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
@@ -430,6 +539,7 @@
 
         // 시간 변경 레버 작동 시
         function setTime(time) {
+            stopVoicePractice();
             currentTime = time;
             const nowBtn = document.getElementById('time-now');
             const thenBtn = document.getElementById('time-then');
@@ -446,6 +556,7 @@
 
         // 게임 모드 변경 제어기
         function setMode(mode) {
+            stopVoicePractice();
             currentMode = mode;
             document.getElementById('btn-mode-practice').classList.remove('active');
             document.getElementById('btn-mode-quiz').classList.remove('active');
@@ -454,11 +565,13 @@
                 document.getElementById('btn-mode-practice').classList.add('active');
                 document.getElementById('practice-controls').style.display = 'flex';
                 document.getElementById('quiz-controls').style.display = 'none';
+                document.getElementById('audio-section').style.display = 'block';
                 updatePracticeDisplay();
             } else {
                 document.getElementById('btn-mode-quiz').classList.add('active');
                 document.getElementById('practice-controls').style.display = 'none';
                 document.getElementById('quiz-controls').style.display = 'block';
+                document.getElementById('audio-section').style.display = 'none';
                 score = 0;
                 currentQuizIndex = 0;
                 updateScoreBoard();
@@ -530,12 +643,19 @@
             displayWindow.appendChild(layer);
             updateScoreBoard();
 
-            // 1.5초 후 피드백 제거하고 다음 문제로
-            setTimeout(() => {
+            // 정답 문장을 음성으로 들려주고(강화 학습), 피드백 시간과 음성이 모두 끝나면 다음 문제로
+            const quiz = quizDatabase[currentQuizIndex];
+            const audioKey = 'quiz-' + String(currentQuizIndex + 1).padStart(2, '0');
+            let timerDone = false, audioDone = false, advanced = false;
+            const tryAdvance = () => {
+                if (advanced || !timerDone || !audioDone || currentMode !== 'quiz') return;
+                advanced = true;
                 layer.classList.remove('show-feedback');
                 currentQuizIndex++;
                 loadQuizQuestion();
-            }, 1500);
+            };
+            VoiceEngine.play(audioKey, quiz.q.replace('___', correct), () => { audioDone = true; tryAdvance(); });
+            setTimeout(() => { timerDone = true; tryAdvance(); }, 1500);
         }
 
         // 스코어 및 등급 판정기 업데이트
@@ -548,6 +668,135 @@
             if(score >= 90) rank = "최고 전설의 타임 로드 👑";
             
             document.getElementById('rank-text').innerText = rank;
+        }
+
+        // ===== 음성 재생 & 발음 연습 =====
+        const LOOP_MAX = 5;
+        let recStream = null, mediaRecorder = null, recChunks = [];
+        let recTimeout = null, recBarTimer = null;
+        let userRecordingUrl = null, userAudio = null;
+        let looping = false, loopCount = 0;
+
+        function plainText(html) {
+            const d = document.createElement('div');
+            d.innerHTML = html;
+            return d.innerText;
+        }
+
+        function currentAudioKey() { return currentPronoun + '-' + currentTime; }
+        function currentSentenceText() { return plainText(gameData[currentPronoun][currentTime].text); }
+
+        function playCurrentSentence() {
+            if (currentMode !== 'practice') return;
+            VoiceEngine.play(currentAudioKey(), currentSentenceText());
+        }
+
+        function showAudioMsg(text) {
+            const el = document.getElementById('audio-msg');
+            el.innerText = text;
+            if (text) setTimeout(() => { if (el.innerText === text) el.innerText = ''; }, 4000);
+        }
+
+        async function startRecording() {
+            stopVoicePractice();
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (e) {
+                showAudioMsg('🎙️ 마이크를 사용할 수 없어요. 브라우저의 마이크 권한을 확인해 주세요!');
+                return;
+            }
+            recStream = stream;
+            recChunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                recStream.getTracks().forEach(t => t.stop());
+                recStream = null;
+                if (userRecordingUrl) URL.revokeObjectURL(userRecordingUrl);
+                userRecordingUrl = URL.createObjectURL(new Blob(recChunks));
+                startPracticeLoop();
+            };
+            mediaRecorder.start();
+
+            document.getElementById('record-panel').style.display = 'flex';
+            const fill = document.getElementById('rec-bar-fill');
+            fill.style.width = '100%';
+            const startTime = performance.now();
+            recBarTimer = setInterval(() => {
+                const remain = Math.max(0, 1 - (performance.now() - startTime) / 15000);
+                fill.style.width = (remain * 100) + '%';
+            }, 100);
+            recTimeout = setTimeout(finishRecording, 15000);
+        }
+
+        function finishRecording() {
+            clearTimeout(recTimeout);
+            clearInterval(recBarTimer);
+            document.getElementById('record-panel').style.display = 'none';
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        }
+
+        function startPracticeLoop() {
+            looping = true;
+            loopCount = 0;
+            document.getElementById('loop-panel').style.display = 'flex';
+            setLoopActions('<button class="audio-btn" onclick="stopVoicePractice()">⏹ 멈추기</button>');
+            loopExample();
+        }
+
+        function setLoopActions(html) {
+            document.getElementById('loop-actions').innerHTML = html;
+        }
+
+        function loopExample() {
+            if (!looping) return;
+            document.getElementById('loop-status').innerText = '🔊 예문 듣는 중... (' + (loopCount + 1) + '/' + LOOP_MAX + ')';
+            VoiceEngine.play(currentAudioKey(), currentSentenceText(), () => {
+                if (looping) setTimeout(loopUser, 400);
+            });
+        }
+
+        function loopUser() {
+            if (!looping) return;
+            document.getElementById('loop-status').innerText = '🎤 내 목소리 듣는 중... (' + (loopCount + 1) + '/' + LOOP_MAX + ')';
+            userAudio = new Audio(userRecordingUrl);
+            let done = false;
+            const next = () => {
+                if (done || !looping) return;
+                done = true;
+                loopCount++;
+                if (loopCount >= LOOP_MAX) askPracticeAgain();
+                else setTimeout(loopExample, 400);
+            };
+            userAudio.onended = next;
+            userAudio.onerror = next;
+            userAudio.play().catch(next);
+        }
+
+        function askPracticeAgain() {
+            document.getElementById('loop-status').innerText = '💪 한 번 더 연습할까요?';
+            setLoopActions(
+                '<button class="audio-btn" onclick="startPracticeLoop()">🔁 다시 듣기</button>' +
+                '<button class="audio-btn" onclick="stopVoicePractice()">✅ 완료</button>'
+            );
+        }
+
+        function stopVoicePractice() {
+            looping = false;
+            VoiceEngine.stop();
+            if (userAudio) { userAudio.pause(); userAudio = null; }
+            clearTimeout(recTimeout);
+            clearInterval(recBarTimer);
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                // 루프를 시작하지 않고 마이크만 정리
+                mediaRecorder.onstop = () => {
+                    if (recStream) { recStream.getTracks().forEach(t => t.stop()); recStream = null; }
+                };
+                mediaRecorder.stop();
+            }
+            document.getElementById('record-panel').style.display = 'none';
+            document.getElementById('loop-panel').style.display = 'none';
         }
 
         // 초기 구동

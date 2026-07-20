@@ -156,7 +156,9 @@
             color: #ff3366;
         }
 
-        .sentence { font-size: 16px; font-weight: bold; }
+        .sentence { font-size: 16px; font-weight: bold; cursor: pointer; }
+
+        .sentence:hover { text-shadow: 0 0 6px rgba(0, 240, 255, 0.5); }
 
         .korean { color: #888; font-size: 13px; width: 100%; margin-left: 78px; }
     </style>
@@ -305,26 +307,48 @@
         <div class="example-card">
             <div class="example-line">
                 <span class="time-tag tag-then">THEN</span>
-                <span class="sentence">Yesterday, I <span class="v-past">was</span> a bit sick.</span>
+                <span class="sentence" data-audio="quiz-01">Yesterday, I <span class="v-past">was</span> a bit sick.</span>
                 <span class="korean">어제 나 살짝 아팠었어.</span>
             </div>
             <div class="example-line">
                 <span class="time-tag tag-now">NOW</span>
-                <span class="sentence">Look! They <span class="v-are">are</span> playing Roblox right now.</span>
+                <span class="sentence" data-audio="quiz-02">Look! They <span class="v-are">are</span> playing Roblox right now.</span>
                 <span class="korean">봐봐! 쟤네 지금 로블록스 하고 있어.</span>
             </div>
             <div class="example-line">
                 <span class="time-tag tag-now">NOW</span>
-                <span class="sentence">Where is dad? He <span class="v-is">is</span> in the kitchen now.</span>
+                <span class="sentence" data-audio="quiz-07">Where is dad? He <span class="v-is">is</span> in the kitchen now.</span>
                 <span class="korean">아빠 어디 계셔? 지금 부엌에 있으셔.</span>
             </div>
             <div class="example-line">
                 <span class="time-tag tag-then">THEN</span>
-                <span class="sentence">Last night, we <span class="v-past">were</span> very tired.</span>
+                <span class="sentence" data-audio="quiz-08">Last night, we <span class="v-past">were</span> very tired.</span>
                 <span class="korean">어젯밤에 우리 진짜 피곤했었잖아.</span>
             </div>
         </div>
     </div>
+
+    <script src="voice.js"></script>
+    <script>
+        // 문장 클릭 → 음성 재생. mp3 키는 카드의 대명사 + NOW/THEN 태그로 유도하고,
+        // 퀴즈 미리보기는 data-audio 속성을 사용. mp3가 없으면 voice.js가 TTS로 대체.
+        document.querySelectorAll('.sentence').forEach(el => {
+            el.title = '클릭하면 문장을 읽어줘요';
+            el.addEventListener('click', () => {
+                let key = el.dataset.audio || null;
+                if (!key) {
+                    const h2 = el.closest('.example-card').querySelector('h2');
+                    const tag = el.closest('.example-line').querySelector('.time-tag');
+                    if (h2 && tag) {
+                        const pronoun = h2.innerText.split(' ')[0];
+                        const time = tag.innerText.trim() === 'NOW' ? 'now' : 'then';
+                        key = pronoun + '-' + time;
+                    }
+                }
+                VoiceEngine.play(key, el.innerText);
+            });
+        });
+    </script>
 
 </body>
 </html>
