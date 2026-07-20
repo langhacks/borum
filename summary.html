@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어 타임머신 요약 노트 (Summary)</title>
+    <style>
+        :root {
+            --bg-color: #0f0f12;
+            --panel-color: #1a1a24;
+            --neon-blue: #00f0ff;
+            --neon-green: #39ff14;
+            --neon-purple: #bd00ff;
+            --neon-yellow: #ffea00;
+            --text-color: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .console-container {
+            background-color: var(--panel-color);
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 650px;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px var(--neon-blue);
+            margin-top: 0;
+            font-size: 24px;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .nav-link {
+            border: 2px solid #555;
+            color: #aaa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .nav-link.active {
+            border-color: var(--neon-purple);
+            color: white;
+            box-shadow: 0 0 10px var(--neon-purple);
+            background: rgba(189, 0, 255, 0.1);
+        }
+
+        .section-label {
+            font-size: 13px;
+            color: #777;
+            text-transform: uppercase;
+            margin: 25px 0 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .rule-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #0a0a0f;
+            border: 2px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .rule-table th, .rule-table td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .rule-table th {
+            background: #222230;
+            color: #aaa;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .highlight-pronoun { color: #ff5555; font-weight: bold; }
+        .v-am { color: var(--neon-yellow); text-shadow: 0 0 5px var(--neon-yellow); font-weight: bold; }
+        .v-is { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); font-weight: bold; }
+        .v-are { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green); font-weight: bold; }
+        .v-past { color: #ff3366; text-shadow: 0 0 5px rgba(255, 51, 102, 0.5); font-weight: bold; }
+
+        .example-card {
+            background-color: #0a0a0f;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+        }
+
+        .example-card h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #ff5555;
+        }
+
+        .example-line {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin: 8px 0;
+            flex-wrap: wrap;
+        }
+
+        .time-tag {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .tag-now {
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .tag-then {
+            border: 1px solid #ff3366;
+            color: #ff3366;
+        }
+
+        .sentence { font-size: 16px; font-weight: bold; }
+
+        .korean { color: #888; font-size: 13px; width: 100%; margin-left: 78px; }
+    </style>
+</head>
+<body>
+
+    <div class="console-container">
+        <h1>📒 TIME MACHINE SUMMARY NOTE</h1>
+
+        <div class="nav-bar">
+            <a class="nav-link" href="index.html">🤖 타임머신 콘솔 (연습 &amp; 퀴즈)</a>
+            <a class="nav-link active" href="summary.html">📒 요약 노트</a>
+        </div>
+
+        <p style="color:#aaa; font-size:14px; line-height:1.6;">
+            타임머신 콘솔은 <span class="highlight-pronoun">대명사(주어)</span>에 따라 be동사가 어떻게 변하는지,
+            그리고 시간이 <span class="v-are">현재(NOW)</span>인지 <span class="v-past">과거(THEN)</span>인지에 따라
+            어떤 형태를 쓰는지를 예문과 퀴즈로 연습하는 게임입니다.
+        </p>
+
+        <div class="section-label">1. be동사 변신 규칙표</div>
+        <table class="rule-table">
+            <tr>
+                <th>주어 (Pronoun)</th>
+                <th>⚡ NOW (현재)</th>
+                <th>⏳ THEN (과거)</th>
+            </tr>
+            <tr>
+                <td><span class="highlight-pronoun">I</span> (나)</td>
+                <td><span class="v-am">am</span></td>
+                <td><span class="v-past">was</span></td>
+            </tr>
+            <tr>
+                <td><span class="highlight-pronoun">He / She / It</span> (그 / 그녀 / 그것)</td>
+                <td><span class="v-is">is</span></td>
+                <td><span class="v-past">was</span></td>
+            </tr>
+            <tr>
+                <td><span class="highlight-pronoun">You / We / They</span> (너 / 우리 / 그들)</td>
+                <td><span class="v-are">are</span></td>
+                <td><span class="v-past">were</span></td>
+            </tr>
+        </table>
+
+        <div class="section-label">2. 대명사별 예문 모음</div>
+
+        <div class="example-card">
+            <h2>I (나)</h2>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">I <span class="v-am">am</span> a Minecraft pro now.</span>
+                <span class="korean">나 지금 마인크래프트 초고수야!</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">I <span class="v-past">was</span> a beginner last year.</span>
+                <span class="korean">나 작년엔 그냥 생초보였어.</span>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <h2>You (너)</h2>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">You <span class="v-are">are</span> hungry now.</span>
+                <span class="korean">너 지금 배고프구나?</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">You <span class="v-past">were</span> full 10 minutes ago.</span>
+                <span class="korean">너 10분 전엔 배 터질 것 같다고 했잖아!</span>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <h2>He (그)</h2>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">He <span class="v-is">is</span> in the Roblox world.</span>
+                <span class="korean">그는 지금 로블록스 세계에 접속해 있어!</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">He <span class="v-past">was</span> in his bed an hour ago.</span>
+                <span class="korean">그는 한 시간 전엔 침대에서 자고 있었어.</span>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <h2>She (그녀)</h2>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">She <span class="v-is">is</span> happy today.</span>
+                <span class="korean">그녀는 오늘 기분이 아주 좋아.</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">She <span class="v-past">was</span> angry yesterday.</span>
+                <span class="korean">그녀는 어제 엄청 화났었지...</span>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <h2>It (그것)</h2>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">It <span class="v-is">is</span> a cool robot.</span>
+                <span class="korean">와, 이거 진짜 멋진 로봇이다!</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">It <span class="v-past">was</span> just a box of Lego.</span>
+                <span class="korean">이거 아까는 그냥 레고 박스였어.</span>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <h2>We (우리)</h2>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">We <span class="v-are">are</span> team champions!</span>
+                <span class="korean">우리는 지금 최강 챔피언 팀이야!</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">We <span class="v-past">were</span> defeated yesterday.</span>
+                <span class="korean">우리 어제는 처참하게 패배했었어...</span>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <h2>They (그들)</h2>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">They <span class="v-are">are</span> my best game friends.</span>
+                <span class="korean">얘네들은 내 최고의 게임 친구들이야.</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">They <span class="v-past">were</span> enemies in the last game.</span>
+                <span class="korean">얘네들 바로 전 판에서는 내 적팀이었어!</span>
+            </div>
+        </div>
+
+        <div class="section-label">3. 퀴즈 예문 미리보기</div>
+        <div class="example-card">
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">Yesterday, I <span class="v-past">was</span> a bit sick.</span>
+                <span class="korean">어제 나 살짝 아팠었어.</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">Look! They <span class="v-are">are</span> playing Roblox right now.</span>
+                <span class="korean">봐봐! 쟤네 지금 로블록스 하고 있어.</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-now">NOW</span>
+                <span class="sentence">Where is dad? He <span class="v-is">is</span> in the kitchen now.</span>
+                <span class="korean">아빠 어디 계셔? 지금 부엌에 있으셔.</span>
+            </div>
+            <div class="example-line">
+                <span class="time-tag tag-then">THEN</span>
+                <span class="sentence">Last night, we <span class="v-past">were</span> very tired.</span>
+                <span class="korean">어젯밤에 우리 진짜 피곤했었잖아.</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
