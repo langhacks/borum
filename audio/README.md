@@ -27,13 +27,12 @@ Examples: `I-now.m.mp3`, `I-now.f.mp3`, `They-then.mp3`, `quiz-03.f.mp3`.
 
 ## Current files
 
-All 24 male files (`*.m.mp3`) were synthesized with edge-tts
-(`en-US-ChristopherNeural`, rate -10%) because Android's built-in TTS
-has no male English voice. To regenerate one:
+All 24 sentences exist in both genders, synthesized with edge-tts at
+rate -10%: `*.m.mp3` with `en-US-ChristopherNeural` (Android's built-in
+TTS has no male English voice) and `*.f.mp3` with `en-US-JennyNeural`.
+Device TTS is now only a fallback. To regenerate one:
 
     uv tool run edge-tts --voice en-US-ChristopherNeural --rate=-10% \
         --text "<sentence>" --write-media <key>.m.mp3
-
-Female playback still uses device TTS (no `*.f.mp3` files yet).
 
 The sentence texts are listed in `../docs/sentences.md`.
